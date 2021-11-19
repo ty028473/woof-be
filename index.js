@@ -36,6 +36,16 @@ app.use(morgan('common'))
 
 app.use('/api/auth', authRoute)
 
+app.get('/api/order_list', async (req, res) => {
+  let data = await connection.queryAsync('SELECT * FROM order_list')
+  res.json(data)
+})
+
+app.get('/api/order_detail', async (req, res) => {
+  let data = await connection.queryAsync('SELECT * FROM order_detail')
+  res.json(data)
+})
+
 app.listen(8801, () => {
   connection.connect()
   console.log('express app啟動了')
