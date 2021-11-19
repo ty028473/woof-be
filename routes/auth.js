@@ -2,7 +2,6 @@ const router = require('express').Router()
 const bcrypt = require('bcrypt')
 const mysql = require('mysql')
 const dotenv = require('dotenv')
-
 const { body, validationResult } = require('express-validator')
 const Promise = require('bluebird')
 
@@ -53,12 +52,19 @@ router.post('/signup', registerRules, async (req, res) => {
       if (validation.isEmpty()) {
         const salt = await bcrypt.genSalt(10)
         const hashedPassword = await bcrypt.hash(req.body.password, salt)
-        let now = moment().format()
-
-        console.log(now)
+        // let now = moment().format('YYYY-MM-DD HH:mm:ss')
         // // 如果 validationResult 空的，
         let setmember = await connection.queryAsync(
-          `INSERT INTO  member ( name,email,password,gender,phone,birthday,create_time ) VALUES  ('${req.body.name}','${req.body.email}','${hashedPassword}','${req.body.gender}','${req.body.phone}','${req.body.date}','${now}');`
+          `INSERT INTO  member ( name,email,password,gender,phone,birthday,create_time ) VALUES (?,?,?,?,?,?,?)`,
+          [
+            req.body.name,
+            req.body.email,
+            hashedPassword,
+            req.body.gender,
+            req.body.phone,
+            req.body.date,
+            new Date(),
+          ]
         )
         return res.status(200).json({ code: 105, message: '寫入成功' })
       }
@@ -86,10 +92,10 @@ router.post('/login', async (req, res) => {
       return res.json({ code: '1104', message: '帳號或密碼錯誤' })
     }
     let returnMember = {
-        id: member.id,
-        name: member.name,
+      id: member.id,
+      name: member.name,
     }
-    res.json({ code: '0', message: '登入成功',returnMember })
+    res.json({ code: '0', message: '登入成功', returnMember })
   } catch (err) {
     // console.error(err)
     return res.json({ code: '9999', message: '請洽系統管理員' })
