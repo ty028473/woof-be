@@ -58,7 +58,16 @@ router.post('/signup', registerRules, async (req, res) => {
         console.log(now)
         // // 如果 validationResult 空的，
         let setmember = await connection.queryAsync(
-          `INSERT INTO  member ( name,email,password,gender,phone,birthday,create_time ) VALUES  ('${req.body.name}','${req.body.email}','${hashedPassword}','${req.body.gender}','${req.body.phone}','${req.body.date}','${now}');`
+          `INSERT INTO  member ( name,email,password,gender,phone,birthday,create_time ) VALUES (?,?,?,?,?,?,?)`,
+          [
+            req.body.name,
+            req.body.email,
+            hashedPassword,
+            req.body.gender,
+            req.body.phone,
+            req.body.date,
+            moment().format('YYYY-MM-DD HH:mm:ss'),
+          ]
         )
         return res.status(200).json({ code: 105, message: '寫入成功' })
       }
@@ -86,10 +95,10 @@ router.post('/login', async (req, res) => {
       return res.json({ code: '1104', message: '帳號或密碼錯誤' })
     }
     let returnMember = {
-        id: member.id,
-        name: member.name,
+      id: member.id,
+      name: member.name,
     }
-    res.json({ code: '0', message: '登入成功',returnMember })
+    res.json({ code: '0', message: '登入成功', returnMember })
   } catch (err) {
     // console.error(err)
     return res.json({ code: '9999', message: '請洽系統管理員' })
