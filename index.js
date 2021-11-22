@@ -6,26 +6,15 @@ const app = express()
 const dotenv = require('dotenv')
 
 const mysql = require('mysql')
+
 const helmet = require('helmet')
 const morgan = require('morgan')
 const multer = require('multer')
 const cors = require('cors')
-const router = express.Router()
 const path = require('path')
-const Promise = require('bluebird')
 const authRoute = require('./routes/auth')
-
+const memberRouter = require('./routes/member')
 dotenv.config()
-
-var connection = mysql.createConnection({
-  host: process.env.host,
-  port: process.env.port,
-  user: process.env.user,
-  password: process.env.password,
-  database: process.env.database,
-})
-
-connection = Promise.promisifyAll(connection)
 
 const corsOptions = {
   origin: 'http://localhost:3000',
@@ -119,7 +108,13 @@ app.use((req, res, next) => {
 })
 
 //8801 port
+
+app.use('/api/member', memberRouter)
+
+app.use((req, res, next) => {
+  res.status(404).send('找不到頁面')
+})
+
 app.listen(8801, () => {
-  connection.connect()
   console.log('express app啟動了')
 })
