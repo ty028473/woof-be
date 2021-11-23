@@ -11,5 +11,6 @@ let connection = mysql.createConnection({
 })
 
 connection = Promise.promisifyAll(connection)
+console.log('加到嗎', process.env.host)
 
 module.exports = connection

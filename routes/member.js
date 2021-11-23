@@ -4,10 +4,7 @@ const connection = require('./connection')
 const { body, validationResult } = require('express-validator')
 
 router.get('/', async (req, res) => {
-  let data = await connection.queryAsync(
-    'SELECT id, email, name, phone, birthday, gender FROM member WHERE id = ?',
-    [req.session.member.id]
-  )
+  let data = await connection.queryAsync('SELECT FROM member WHERE id = ?', [1])
 
   if (data.length > 0) {
     res.json(data[0])
