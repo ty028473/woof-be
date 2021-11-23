@@ -8,6 +8,7 @@ const cors = require('cors')
 const path = require('path')
 const authRoute = require('./routes/auth')
 const memberRouter = require('./routes/member')
+const ordersRouter = require('./routes/orders')
 dotenv.config()
 
 const corsOptions = {
@@ -20,17 +21,9 @@ app.use(cors(corsOptions))
 app.use(express.json())
 app.use(helmet())
 app.use(morgan('common'))
-
+app.use(express.urlencoded({ extended: true }));
+app.use('/api/orders', ordersRouter)
 app.use('/api/auth', authRoute)
-
-app.get('/api/order_list', async (req, res) => {
-  let data = await connection.queryAsync('SELECT * FROM order_list')
-  res.json(data)
-})
-
-app.get('/api/order_detail', async (req, res) => {
-  let data = await connection.queryAsync('SELECT * FROM order_detail')
-  res.json(data)
 
 app.use('/api/member', memberRouter)
 

@@ -3,7 +3,7 @@ const router = express.Router()
 const connection = require('./connection')
 
 router.get('/', async (req, res) => {
-  let data = await connection.queryAsync('SELECT * FROM member WHERE id = ?', [
+  let data = await connection.queryAsync('SELECT FROM member WHERE id = ?', [
     1,
   ])
 
