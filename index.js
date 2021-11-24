@@ -48,10 +48,10 @@ app.use(morgan('common'))
 app.use('/api/auth', authRoute)
 
 //這個中間件事負責做紀錄的
-app.use((req, res, next) => {
-  console.log(`${req.url}找不到路由`)
-  next()
-})
+// app.use((req, res, next) => {
+//   console.log(`${req.url}找不到路由`)
+//   next()
+// })
 
 //8801 port
 
