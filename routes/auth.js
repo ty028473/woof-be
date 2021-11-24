@@ -1,30 +1,18 @@
-const router = require('express').Router()
+const express = require('express')
+const router = express.Router()
+const connection = require('./connection')
 const bcrypt = require('bcrypt')
-const mysql = require('mysql')
-const dotenv = require('dotenv')
+const moment = require('moment')
 const { body, validationResult } = require('express-validator')
-const Promise = require('bluebird')
 
-var moment = require('moment') // require
-dotenv.config()
-
-var connection = mysql.createConnection({
-  host: process.env.host,
-  port: process.env.port,
-  user: process.env.user,
-  password: process.env.password,
-  database: process.env.database,
-})
-
-connection = Promise.promisifyAll(connection)
-
+// 註冊資料驗證
 const registerRules = [
   body('email').isEmail().withMessage('Email 欄位請正確填寫'), // 文件中會有
   body('password').isLength({ min: 6 }).withMessage('密碼長度至少為 6'),
-  // 客製化 (custom(得到的值,{req}))
-  body('name').isLength({ min: 2 }).withMessage('名子請大於2個字'),
+  body('name').isLength({ max: 4 }).withMessage('名字不可大於四個字'),
   body('phone').isLength({ min: 10, max: 10 }).withMessage('電話請填10碼'),
-
+  body('birthday').isLength({ min: 10, max: 10 }).withMessage('生日輸入錯誤'),
+  body('gender').isLength({ min: 1, max: 1 }).withMessage('性別輸入錯誤'),
   body('confirmPassword')
     .custom((value, { req }) => {
       return value === req.body.password
@@ -32,74 +20,103 @@ const registerRules = [
     .withMessage('密碼不一致'),
 ]
 
+// 註冊
 router.post('/signup', registerRules, async (req, res) => {
+  const validateResult = validationResult(req)
+  if (!validateResult.isEmpty()) {
+    // validateResult 不是空的，那表示有欄位沒有通過驗證
+    // 文件的寫法 https://express-validator.github.io/docs/
+    return res.status(400).json({ errors: validateResult.array() })
+  }
+  // 表示 validateResult 是空的 ==> 都通過驗證了
+
+  // 是否已註冊
   try {
-    const validation = validationResult(req)
-    if (!validation.isEmpty()) {
-      // 如果 validationResult 不是空的，代表有欄位沒有通過
-      let error = validation.array()
-      return res.status(400).json({ code: 99, message: error })
+    let member = await connection.queryAsync(
+      'SELECT * FROM member WHERE email = ?',
+      req.body.email
+    )
+
+    if (member.length > 0) {
+      // 表示這個 email 已經存在過
+      return res.json({ code: '0002', message: '該 email 已註冊' })
     }
 
-    let member = await connection.queryAsync(
-      'SELECT * FROM member WHERE email = ?;',
-      [req.body.email]
+    // email 不存在，可建立帳號
+    // 密碼加密 bcrypt
+    let hashPassword = await bcrypt.hash(req.body.password, 10)
+
+    // 建立一筆資料
+
+    let result = await connection.queryAsync(
+      'INSERT INTO member (email, password, name, gender, phone, birthday, create_time) VALUES (?)',
+      [
+        [
+          req.body.email,
+          hashPassword,
+          req.body.name,
+          req.body.gender,
+          req.body.phone,
+          req.body.birthday,
+          moment().format('YYYY/MM/DD HH:mm:ss'),
+        ],
+      ]
     )
-    if (member.length > 0) {
-      res.json({ code: 0, message: '已註冊' })
-    }
-    if (member.length == 0) {
-      if (validation.isEmpty()) {
-        const salt = await bcrypt.genSalt(10)
-        const hashedPassword = await bcrypt.hash(req.body.password, salt)
-        // let now = moment().format('YYYY-MM-DD HH:mm:ss')
-        // // 如果 validationResult 空的，
-        let setmember = await connection.queryAsync(
-          `INSERT INTO  member ( name,email,password,gender,phone,birthday,create_time ) VALUES (?,?,?,?,?,?,?)`,
-          [
-            req.body.name,
-            req.body.email,
-            hashedPassword,
-            req.body.gender,
-            req.body.phone,
-            req.body.date,
-            new Date(),
-          ]
-        )
-        return res.status(200).json({ code: 105, message: '寫入成功' })
-      }
-    }
-    // 如果是空的代表通過驗證 ...
-  } catch (err) {
-    console.error(err)
-    res.json({ code: '9999', message: '請洽系統管理員' })
+
+    res.json({ code: '0000', message: '註冊成功' })
+  } catch (e) {
+    console.error(e)
+    res.json({ code: '0001', message: '註冊失敗' })
   }
 })
 
+// 登入
 router.post('/login', async (req, res) => {
   try {
+    // 比對帳號
     let member = await connection.queryAsync(
       'SELECT * FROM member WHERE email = ?',
       [req.body.email]
     )
+
     if (member.length === 0) {
-      return res.json({ code: '1103', message: '帳號或密碼錯誤' })
+      // 查無此帳號
+      return res.json({ code: '1000', message: '帳號或密碼錯誤' })
     }
+
+    // 把第0筆抓出來，後面就不用使用時都要加[0]
     member = member[0]
 
+    // 比對密碼
     let result = await bcrypt.compare(req.body.password, member.password)
     if (!result) {
-      return res.json({ code: '1104', message: '帳號或密碼錯誤' })
+      // 密碼比對失敗
+      return res.json({ code: '1000', message: '帳號或密碼錯誤' })
     }
+
+    // 比對資料成功，寫進session
+    // 自訂要存什麼資料
     let returnMember = {
       id: member.id,
+      email: member.email,
       name: member.name,
     }
-    res.json({ code: '0', message: '登入成功', returnMember })
-  } catch (err) {
-    // console.error(err)
-    return res.json({ code: '9999', message: '請洽系統管理員' })
+    req.session.member = returnMember
+    res.json({ code: '1001', message: '登入成功', member: returnMember })
+  } catch (e) {
+    console.error(e)
+    return res.json({ code: '1002', message: '登入失敗' })
   }
 })
 
+// 登出
+router.get('/logout', (req, res) => {
+  try {
+    req.session.member = null
+    return res.json({ code: '2000', message: '登出成功' })
+  } catch (e) {
+    console.error(e)
+    return res.json({ code: '2001', message: '登出失敗' })
+  }
+})
 module.exports = router
