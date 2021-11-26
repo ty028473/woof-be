@@ -18,7 +18,8 @@ router.get('/order_detail', async (req, res) => {
 // 查看 member_id =1 的 bonus
 router.get('/member/bonus', async (req, res) => {
   let data = await connection.queryAsync(
-    'SELECT total_bonus FROM member WHERE id = 1'
+    'SELECT total_bonus FROM member WHERE id = ?',
+    [req.session.member.id]
   )
   res.json(data)
 })
@@ -26,12 +27,13 @@ router.get('/member/bonus', async (req, res) => {
 // 查看 member_id =1 的 pet
 router.get('/member/pets', async (req, res) => {
   let data = await connection.queryAsync(
-    'SELECT name FROM pet WHERE member_id = 1'
+    'SELECT name FROM pet WHERE member_id = ?',
+    [req.session.member.id]
   )
   res.json(data)
 })
 
-// 寫入主訂單
+// Cart.js 寫入主訂單 + 子訂單
 router.post('/order_insert', async (req, res) => {
   try {
     // 先判斷有無資料
@@ -42,21 +44,23 @@ router.post('/order_insert', async (req, res) => {
     if (req.body.length > 0) {
       let orderList = await connection.queryAsync(
         `INSERT INTO  order_list ( member_id,check_status,order_status,use_bonus,total_sum,create_time ) VALUES (?,?,?,?,?,?)`,
-        [1, 2, 1, req.body[1].use_bonus, req.body[1].total_sum, new Date()]
+        [
+          req.session.member.id,
+          2,
+          1,
+          req.body[1].use_bonus,
+          req.body[1].total_sum,
+          new Date(),
+        ]
       )
-      // 找主訂單的最後一個 index id
-      let findOrderListMax = await connection.queryAsync(
-        `SELECT MAX(ID) FROM order_list WHERE id`
-      )
-      console.log('我是findOrderListMax', findOrderListMax[0]['MAX(ID)'])
-
+      // 找主訂單的最後一個 orderList.insertId
       // (子訂單)
       for (let i = 0; i < req.body[0].length; i++) {
         let orderDetail = await connection.queryAsync(
           `INSERT INTO  order_detail(order_id,pet_sitter_id,district,start,end,title, address,pet_id)VALUES(?)`,
           [
             [
-              findOrderListMax[0]['MAX(ID)'],
+              orderList.insertId,
               req.body[0][i].pet_sitter_id,
               req.body[0][i].district,
               moment(req.body[0][i].start).format('YYYY/MM/DD HH:mm:ss'),
@@ -68,11 +72,40 @@ router.post('/order_insert', async (req, res) => {
           ]
         )
       }
+      res.status(200).json({ orderId: orderList.insertId })
     }
-    res.status(200).json(req.body)
   } catch (err) {
     console.error(err)
     res.json('沒收到資料')
+  }
+})
+
+// OrderCheck.js 將 member_id = 1 狀態為「未結帳」訂單資料顯示出來
+router.get('/member/checkList', async (req, res) => {
+  let data = await connection.queryAsync(
+    'SELECT * FROM order_list INNER JOIN order_detail WHERE check_status = 2 AND member_id = ? ',
+    [req.session.member.id]
+  )
+  res.json(data)
+})
+
+// OrderCheck.js 更新主訂單狀態為「已結帳」
+router.post('/order_update', async (req, res) => {
+  try {
+    // 先判斷有無資料
+    // if (req.body.length === 0) {
+    //   return res.status(200).json({ code: 105, message: '沒有要結帳的訂單' })
+    // }
+    // if (req.body.length > 0) {
+    let orderUpdate = await connection.queryAsync(
+      `UPDATE order_list SET check_status = 1 WHERE id = ?`,
+      [req.body.orderId]
+    )
+    // }
+    res.status(200).json({ code: '0', message: '結帳成功' })
+  } catch (err) {
+    console.error(err)
+    res.json({ code: '999', message: '失敗結帳失敗' })
   }
 })
 
