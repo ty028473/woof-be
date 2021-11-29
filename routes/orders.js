@@ -80,10 +80,25 @@ router.post('/order_insert', async (req, res) => {
   }
 })
 
+// local stroge 找保母照片跟名稱
+router.post('/member/findImg', async (req, res) => {
+  // 先從 pet_sitter.id 找 member_id
+  let findMember = await connection.queryAsync(
+    'SELECT member_id FROM pet_sitter WHERE id = ?',
+    [req.body.pet_sitter_id] // 好幾個 pet_sitter.id
+  )
+  // res.json(findMember)
+  let findImg = await connection.queryAsync(
+    'SELECT image,name FROM member WHERE id = ?',
+    [findMember[0].member_id] // 好幾個 member.id
+  )
+  res.json(findImg)
+})
+
 // OrderCheck.js 將 member_id = 1 狀態為「未結帳」訂單資料顯示出來
 router.get('/member/checkList', async (req, res) => {
   let data = await connection.queryAsync(
-    'SELECT * FROM order_list INNER JOIN order_detail WHERE check_status = 2 AND member_id = ? ',
+    'SELECT order_detail.start,order_detail.end,order_detail.title,order_detail.district,order_detail.address,order_detail.pet_id AS pet_name,member.name AS pet_sitter_name,member.image,order_list.use_bonus,order_list.total_sum FROM order_list JOIN order_detail  ON order_list.id = order_detail.order_id JOIN pet_sitter  ON order_detail.pet_sitter_id = pet_sitter.id JOIN member  ON member.id = pet_sitter.member_id WHERE order_list.check_status = 2 AND order_list.member_id = ?',
     [req.session.member.id]
   )
   res.json(data)
