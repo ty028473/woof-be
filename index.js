@@ -18,6 +18,9 @@ const ordersRouter = require('./routes/orders')
 const reserveRouter = require('./routes/reserve')
 const calendarRouter = require('./routes/CalendarControl')
 
+// 讀取圖檔
+app.use(express.static('public'))
+
 //告訴express有一個中間件
 //middlewave=函式，會有三個參數（req res next）<
 //呼叫next去下一個，沒有next 就會停止
@@ -65,6 +68,12 @@ app.use('/api/calendar', calendarRouter)
 
 app.use((req, res, next) => {
   res.status(404).send('找不到頁面')
+})
+
+//錯誤處理 有四個參數
+app.use((err, req, res, next) => {
+  console.log(err)
+  res.status(500).json({ code: '9999' })
 })
 
 app.listen(8801, () => {
