@@ -5,15 +5,15 @@ const connection = require('./connection')
 //拿保母全部資料（每一個時段＝還要修）
 router.get('/', async (req, res) => {
   let data = await connection.queryAsync(
-    'SELECT T2.id,name,MIN(title) AS min,MAX(title) AS max,introduction,T4.district ,score,T2.district,T4.start FROM member AS T1  JOIN pet_sitter AS T2 ON T1.id = T2.member_id JOIN evaluation T3 ON T2.id = T3.pet_sitter_id  JOIN time T4 ON  T3.pet_sitter_id = T4.pet_sitter_id GROUP BY T2.id  '
+    'SELECT T2.id,name,MIN(title) AS min,MAX(title) AS max,MIN(LEFT(start,10))AS start,MAX(LEFT(start,10))AS end,introduction,T4.district ,score,T2.district FROM member AS T1  JOIN pet_sitter AS T2 ON T1.id = T2.member_id JOIN evaluation T3 ON T2.id = T3.pet_sitter_id  JOIN time T4 ON  T3.pet_sitter_id = T4.pet_sitter_id GROUP BY T2.id  '
   )
   res.json(data)
 })
-//拿保母時段資料
-router.get('/time', async (req, res) => {
+router.get('/schedules', async (req, res, next) => {
   let data = await connection.queryAsync(
-    'SELECT pet_sitter_id, LEFT(start,10)AS start  FROM time'
+    'SELECT T2.id,name,MIN(title) AS min,MAX(title) AS max,MIN(LEFT(start,10))AS start,MAX(LEFT(start,10))AS end,introduction,T4.district ,score,T2.district FROM member AS T1  JOIN pet_sitter AS T2 ON T1.id = T2.member_id JOIN evaluation T3 ON T2.id = T3.pet_sitter_id  JOIN time T4 ON  T3.pet_sitter_id = T4.pet_sitter_id GROUP BY T2.id  '
   )
+
   res.json(data)
 })
 // Reservecalendar拿到每個保姆個人頁面
@@ -33,6 +33,7 @@ router.get('/:reserveId', async (req, res) => {
     res.status(404).send('找不到頁面')
   }
 })
+
 router.post('/reserve', (req, res) => {})
 
 module.exports = router

@@ -16,6 +16,7 @@ const authRouter = require('./routes/auth')
 const memberRouter = require('./routes/member')
 const ordersRouter = require('./routes/orders')
 const reserveRouter = require('./routes/reserve')
+const calendarRouter = require('./routes/CalendarControl')
 
 //告訴express有一個中間件
 //middlewave=函式，會有三個參數（req res next）<
@@ -60,6 +61,7 @@ app.use('/api/member', memberRouter)
 app.use('/api/reserve', reserveRouter)
 app.use('/api/orders', ordersRouter)
 app.use('/api/auth', authRouter)
+app.use('/api/calendar', calendarRouter)
 
 app.use((req, res, next) => {
   res.status(404).send('找不到頁面')
