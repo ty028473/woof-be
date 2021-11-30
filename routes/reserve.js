@@ -3,15 +3,15 @@ const router = express.Router()
 const connection = require('./connection')
 
 //拿保母全部資料（每一個時段＝還要修）
-router.get('/', async (req, res) => {
+router.get('/', async (req, res, next) => {
   let data = await connection.queryAsync(
-    'SELECT T2.id,name,MIN(title) AS min,MAX(title) AS max,MIN(LEFT(start,10))AS start,MAX(LEFT(start,10))AS end,introduction,T4.district ,score,T2.district FROM member AS T1  JOIN pet_sitter AS T2 ON T1.id = T2.member_id JOIN evaluation T3 ON T2.id = T3.pet_sitter_id  JOIN time T4 ON  T3.pet_sitter_id = T4.pet_sitter_id GROUP BY T2.id  '
+    'SELECT T2.id,name,MIN(title) AS min,MAX(title) AS max,MIN(LEFT(start,10))AS start,MAX(LEFT(start,10))AS end,introduction,T2.district ,score,T1.image FROM member AS T1  JOIN pet_sitter AS T2 ON T1.id = T2.member_id JOIN evaluation T3 ON T2.id = T3.pet_sitter_id  JOIN time T4 ON  T3.pet_sitter_id = T4.pet_sitter_id GROUP BY T2.id  '
   )
   res.json(data)
 })
 router.get('/schedules', async (req, res, next) => {
   let data = await connection.queryAsync(
-    'SELECT T2.id,name,MIN(title) AS min,MAX(title) AS max,MIN(LEFT(start,10))AS start,MAX(LEFT(start,10))AS end,introduction,T4.district ,score,T2.district FROM member AS T1  JOIN pet_sitter AS T2 ON T1.id = T2.member_id JOIN evaluation T3 ON T2.id = T3.pet_sitter_id  JOIN time T4 ON  T3.pet_sitter_id = T4.pet_sitter_id GROUP BY T2.id  '
+    'SELECT T2.id,name,MIN(title) AS min,MAX(title) AS max,MIN(LEFT(start,10))AS start,MAX(LEFT(start,10))AS end,introduction,T2.district ,score FROM member AS T1  JOIN pet_sitter AS T2 ON T1.id = T2.member_id JOIN evaluation T3 ON T2.id = T3.pet_sitter_id  JOIN time T4 ON  T3.pet_sitter_id = T4.pet_sitter_id GROUP BY T2.id  '
   )
 
   res.json(data)
