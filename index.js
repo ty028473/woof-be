@@ -10,6 +10,8 @@ const cors = require('cors')
 const expressSession = require('express-session')
 let FileStore = require('session-file-store')(expressSession)
 const path = require('path')
+const http = require('http').Server(app)
+
 
 // 引用routes
 const authRouter = require('./routes/auth')
@@ -41,7 +43,25 @@ app.use(
     // optionSuccessStatus: 200,
   })
 )
+const io = require('socket.io')(http, {
+  cors: {
+    origin: 'http://localhost:3000',
+    credentials: true,
+  },
+})
 
+
+// 讀到 body 的資料
+app.use(express.urlencoded({ extended: true }))
+// 解析得到 json 的資料
+app.use(express.json())
+app.use(helmet())
+app.use(morgan('common'))
+
+
+
+
+//在express 註冊中間建
 app.use(
   expressSession({
     store: new FileStore({ path: path.join(__dirname, '..', 'sessions') }),
@@ -51,18 +71,14 @@ app.use(
   })
 )
 
-// 讀到 body 的資料
-app.use(express.urlencoded({ extended: true }))
-// 解析得到 json 的資料
-app.use(express.json())
-app.use(helmet())
-app.use(morgan('common'))
 
 // 8801 port 後端路由總集合
 app.use('/api/member', memberRouter)
 app.use('/api/reserve', reserveRouter)
 app.use('/api/orders', ordersRouter)
 app.use('/api/auth', authRouter)
+
+
 
 // 這個中間件事負責做紀錄的
 app.use((req, res, next) => {
@@ -80,6 +96,27 @@ app.use((err, req, res, next) => {
   res.status(500).json({ code: '9999' })
 })
 
-app.listen(8801, () => {
+
+
+
+
+//socket sever
+
+io.on('connection', (socket) => {
+  
+    console.log("有人連線", socket.id);
+  
+    socket.on("send_message", (data) => {
+      socket.broadcast.emit("receive_message", data);
+    });
+  
+    socket.on("disconnect", () => {
+      console.log("有人斷線", socket.id);
+    });
+  });
+  
+
+
+http.listen(8801, () => {
   console.log('express app啟動了')
 })

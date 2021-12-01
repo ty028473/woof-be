@@ -100,6 +100,8 @@ router.post('/login', async (req, res) => {
       id: member.id,
       email: member.email,
       name: member.name,
+      states: member.states,
+      image:member.image
     }
     req.session.member = returnMember
     res.json({ code: '1001', message: '登入成功', member: returnMember })
