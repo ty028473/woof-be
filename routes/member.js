@@ -14,10 +14,6 @@ router.get('/', async (req, res) => {
     'SELECT email, name, phone, birthday, gender, image FROM member WHERE id = ?',
     [req.session.member.id]
   )
-  // let data = await connection.queryAsync(
-  //   'SELECT id, email, name, phone, birthday, gender FROM member WHERE id = ?',
-  //   [req.session.member.id]
-  // )
 
   if (data.length > 0) {
     res.json(data[0])
