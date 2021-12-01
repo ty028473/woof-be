@@ -109,6 +109,7 @@ router.post('/login', async (req, res) => {
       'SELECT * FROM pet_sitter WHERE member_id = ?',
       [member.id]
     )
+
     // 有的話在session新增
     if (petSitter.length !== 0) {
       petSitter = petSitter[0]
