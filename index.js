@@ -65,10 +65,17 @@ app.use('/api/home', homeRouter)
 app.use('/api/auth', authRouter)
 app.use('/api/calendar', calendarRouter)
 
+// 讀取圖檔
+app.use(express.static('public'))
+
 app.use((req, res, next) => {
   res.status(404).send('找不到頁面')
 })
-
+//錯誤處理 有四個參數
+app.use((err, req, res, next) => {
+  console.log(err)
+  res.status(500).json({ code: '9999' })
+})
 app.listen(8801, () => {
   console.log('express app啟動了')
 })
