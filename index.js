@@ -15,10 +15,9 @@ const path = require('path')
 const authRouter = require('./routes/auth')
 const memberRouter = require('./routes/member')
 const ordersRouter = require('./routes/orders')
+const homeRouter = require('./routes/home')
 const reserveRouter = require('./routes/reserve')
-
-// 讀取圖檔
-app.use(express.static('public'))
+const calendarRouter = require('./routes/calendar')
 
 //告訴express有一個中間件
 //middlewave=函式，會有三個參數（req res next）<
@@ -62,22 +61,12 @@ app.use(morgan('common'))
 app.use('/api/member', memberRouter)
 app.use('/api/reserve', reserveRouter)
 app.use('/api/orders', ordersRouter)
+app.use('/api/home', homeRouter)
 app.use('/api/auth', authRouter)
-
-// 這個中間件事負責做紀錄的
-app.use((req, res, next) => {
-  console.log(`${req.url}找不到路由`)
-  next()
-})
+app.use('/api/calendar', calendarRouter)
 
 app.use((req, res, next) => {
   res.status(404).send('找不到頁面')
-})
-
-//錯誤處理 有四個參數
-app.use((err, req, res, next) => {
-  console.log(err)
-  res.status(500).json({ code: '9999' })
 })
 
 app.listen(8801, () => {
