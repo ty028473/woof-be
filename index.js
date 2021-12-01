@@ -15,6 +15,7 @@ const path = require('path')
 const authRouter = require('./routes/auth')
 const memberRouter = require('./routes/member')
 const ordersRouter = require('./routes/orders')
+const homeRouter = require('./routes/home')
 const reserveRouter = require('./routes/reserve')
 
 // 讀取圖檔
@@ -62,6 +63,7 @@ app.use(morgan('common'))
 app.use('/api/member', memberRouter)
 app.use('/api/reserve', reserveRouter)
 app.use('/api/orders', ordersRouter)
+app.use('/api/home', homeRouter)
 app.use('/api/auth', authRouter)
 
 // 這個中間件事負責做紀錄的
