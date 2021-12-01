@@ -14,10 +14,6 @@ router.get('/', async (req, res) => {
     'SELECT email, name, phone, birthday, gender, image FROM member WHERE id = ?',
     [req.session.member.id]
   )
-  // let data = await connection.queryAsync(
-  //   'SELECT id, email, name, phone, birthday, gender FROM member WHERE id = ?',
-  //   [req.session.member.id]
-  // )
 
   if (data.length > 0) {
     res.json(data[0])
@@ -25,6 +21,7 @@ router.get('/', async (req, res) => {
     res.status(404).send('Not Found')
   }
 })
+
 const registerRules = [
   body('name').isLength({ max: 4 }).withMessage('名字不可大於四個字'),
   body('phone').isLength({ min: 10, max: 10 }).withMessage('電話輸入錯誤'),
@@ -71,19 +68,32 @@ router.post(
     if (!validateResult.isEmpty()) {
       return res.status(400).json({ errors: validateResult.array() })
     }
+    if (req.file) {
+      let filename = req.file ? '/memberImg/' + req.file.filename : ''
+      let data = await connection.queryAsync(
+        `UPDATE member SET name= ?, phone= ?, birthday= ?, gender= ?, image=? WHERE id= ?`,
+        [
+          req.body.name,
+          req.body.phone,
+          req.body.birthday,
+          req.body.gender,
+          filename,
+          req.session.member.id,
+        ]
+      )
+    } else {
+      let data = await connection.queryAsync(
+        `UPDATE member SET name= ?, phone= ?, birthday= ?, gender= ? WHERE id= ?`,
+        [
+          req.body.name,
+          req.body.phone,
+          req.body.birthday,
+          req.body.gender,
+          req.session.member.id,
+        ]
+      )
+    }
 
-    let filename = req.file ? '/memberImg/' + req.file.filename : ''
-    let data = await connection.queryAsync(
-      `UPDATE member SET name= ?, phone= ?, birthday= ?, gender= ?, image=? WHERE id= ?`,
-      [
-        req.body.name,
-        req.body.phone,
-        req.body.birthday,
-        req.body.gender,
-        filename,
-        req.session.member.id,
-      ]
-    )
     res.json({ code: '3000', message: '會員資料修改成功' })
   }
 )
