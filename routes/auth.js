@@ -100,7 +100,23 @@ router.post('/login', async (req, res) => {
       id: member.id,
       email: member.email,
       name: member.name,
+      // null代表不是保母
+      petSitterId: null,
     }
+
+    // 讀取此會員有沒有保母身分
+    let petSitter = await connection.queryAsync(
+      'SELECT * FROM pet_sitter WHERE member_id = ?',
+      [member.id]
+    )
+    if (petSitter.length !== 0) {
+      petSitter = petSitter[0]
+      returnMember = {
+        ...returnMember,
+        petSitterId: petSitter.id,
+      }
+    }
+
     req.session.member = returnMember
     res.json({ code: '1001', message: '登入成功', member: returnMember })
   } catch (e) {
