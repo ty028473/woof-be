@@ -15,16 +15,17 @@ router.get('/order_detail', async (req, res) => {
   res.json(data)
 })
 
-// 查看 member_id =1 的 bonus
+// 查看 登入會員 session 的 bonus
 router.get('/member/bonus', async (req, res) => {
   let data = await connection.queryAsync(
     'SELECT total_bonus FROM member WHERE id = ?',
     [req.session.member.id]
   )
+  // console.log('我在測試我的member_id', req.session)
   res.json(data)
 })
 
-// 查看 member_id =1 的 pet
+// 查看 登入會員 session 的 pet
 router.get('/member/pets', async (req, res) => {
   let data = await connection.queryAsync(
     'SELECT name FROM pet WHERE member_id = ?',
@@ -43,11 +44,10 @@ router.post('/order_insert', async (req, res) => {
     // 如果有資料就存進資料庫(主訂單)
     if (req.body.length > 0) {
       let orderList = await connection.queryAsync(
-        `INSERT INTO  order_list ( member_id,check_status,order_status,use_bonus,total_sum,create_time ) VALUES (?,?,?,?,?,?)`,
+        `INSERT INTO  order_list ( member_id,check_status,use_bonus,total_sum,create_time ) VALUES (?,?,?,?,?)`,
         [
           req.session.member.id,
           2,
-          1,
           req.body[1].use_bonus,
           req.body[1].total_sum,
           new Date(),
@@ -57,10 +57,11 @@ router.post('/order_insert', async (req, res) => {
       // (子訂單)
       for (let i = 0; i < req.body[0].length; i++) {
         let orderDetail = await connection.queryAsync(
-          `INSERT INTO  order_detail(order_id,pet_sitter_id,district,start,end,title, address,pet_id)VALUES(?)`,
+          `INSERT INTO  order_detail(order_id,order_status,pet_sitter_id,district,start,end,title, address,pet_id)VALUES(?)`,
           [
             [
               orderList.insertId,
+              1,
               req.body[0][i].pet_sitter_id,
               req.body[0][i].district,
               moment(req.body[0][i].start).format('YYYY/MM/DD HH:mm:ss'),
@@ -95,7 +96,7 @@ router.post('/member/findImg', async (req, res) => {
   res.json(findImg)
 })
 
-// OrderCheck.js 將 member_id = 1 狀態為「未結帳」訂單資料顯示出來
+// OrderCheck.js 將登入會員 session 狀態為「未結帳」訂單資料顯示出來
 router.get('/member/checkList', async (req, res) => {
   let data = await connection.queryAsync(
     'SELECT order_detail.start,order_detail.end,order_detail.title,order_detail.district,order_detail.address,order_detail.pet_id AS pet_name,member.name AS pet_sitter_name,member.image,order_list.use_bonus,order_list.total_sum FROM order_list JOIN order_detail  ON order_list.id = order_detail.order_id JOIN pet_sitter  ON order_detail.pet_sitter_id = pet_sitter.id JOIN member  ON member.id = pet_sitter.member_id WHERE order_list.check_status = 2 AND order_list.member_id = ?',
