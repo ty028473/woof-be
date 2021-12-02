@@ -16,6 +16,7 @@ const http = require('http').Server(app)
 // 引用routes
 const authRouter = require('./routes/auth')
 const memberRouter = require('./routes/member')
+const petSitterRouter = require('./routes/petSitter')
 const ordersRouter = require('./routes/orders')
 const homeRouter = require('./routes/home')
 const reserveRouter = require('./routes/reserve')
@@ -73,6 +74,7 @@ app.use(
 
 // 8801 port 後端路由總集合
 app.use('/api/member', memberRouter)
+app.use('/api/petSitter', petSitterRouter)
 app.use('/api/reserve', reserveRouter)
 app.use('/api/orders', ordersRouter)
 app.use('/api/home', homeRouter)
