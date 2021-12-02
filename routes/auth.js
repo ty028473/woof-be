@@ -101,7 +101,7 @@ router.post('/login', async (req, res) => {
       email: member.email,
       name: member.name,
       states: member.states,
-      image:member.image,
+      image: member.image,
       // null代表不是保母
       petSitterId: null,
     }
