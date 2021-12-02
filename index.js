@@ -12,7 +12,6 @@ let FileStore = require('session-file-store')(expressSession)
 const path = require('path')
 const http = require('http').Server(app)
 
-
 // 引用routes
 const authRouter = require('./routes/auth')
 const memberRouter = require('./routes/member')
@@ -43,6 +42,7 @@ app.use(
     // optionSuccessStatus: 200,
   })
 )
+
 const io = require('socket.io')(http, {
   cors: {
     origin: 'http://localhost:3000',
@@ -50,16 +50,12 @@ const io = require('socket.io')(http, {
   },
 })
 
-
 // 讀到 body 的資料
 app.use(express.urlencoded({ extended: true }))
 // 解析得到 json 的資料
 app.use(express.json())
 app.use(helmet())
 app.use(morgan('common'))
-
-
-
 
 //在express 註冊中間建
 app.use(
@@ -71,7 +67,6 @@ app.use(
   })
 )
 
-
 // 8801 port 後端路由總集合
 app.use('/api/member', memberRouter)
 app.use('/api/petSitter', petSitterRouter)
@@ -80,9 +75,6 @@ app.use('/api/orders', ordersRouter)
 app.use('/api/home', homeRouter)
 app.use('/api/auth', authRouter)
 app.use('/api/calendar', calendarRouter)
-
-
-
 
 // 這個中間件事負責做紀錄的
 app.use((req, res, next) => {
@@ -93,7 +85,6 @@ app.use((req, res, next) => {
 // 讀取圖檔
 app.use(express.static('public'))
 
-
 app.use((req, res, next) => {
   res.status(404).send('找不到頁面')
 })
@@ -103,29 +94,20 @@ app.use((err, req, res, next) => {
   res.status(500).json({ code: '9999' })
 })
 
-
-
-
-
-
 //socket sever
 
 io.on('connection', (socket) => {
-  
-    console.log("有人連線", socket.id);
-  
-    socket.on("send_message", (data) => {
-      socket.broadcast.emit("receive_message", data);
-    });
-  
-    socket.on("disconnect", () => {
-      console.log("有人斷線", socket.id);
-    });
-  });
-  
+  console.log('有人連線', socket.id)
 
+  socket.on('send_message', (data) => {
+    socket.broadcast.emit('receive_message', data)
+  })
+
+  socket.on('disconnect', () => {
+    console.log('有人斷線', socket.id)
+  })
+})
 
 http.listen(8801, () => {
-
   console.log('express app啟動了')
 })
