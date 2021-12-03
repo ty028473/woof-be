@@ -10,6 +10,7 @@ const { body, validationResult } = require('express-validator')
 // 驗證有沒有登入
 router.use(loginCheckMiddleware)
 
+// 取得會員資料
 router.get('/', async (req, res) => {
   let data = await connection.queryAsync(
     // 'SELECT member.email, member.name, member.phone, member.birthday, member.gender, member.image, member.total_bonus, COUNT(order_list.id), SUM(order_list.use_bonus) FROM member INNER JOIN order_list ON member.id = order_list.member_id WHERE id = ?',
