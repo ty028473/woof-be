@@ -1,6 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const connection = require('./connection')
+const moment = require('moment')
 const { loginCheckMiddleware } = require('../middlewares/auth')
 
 // 驗證有沒有登入
@@ -33,5 +34,21 @@ router.post('/updatepetSitter', async (req, res) => {
     ]
   )
   res.json({ code: '4000', message: '保母會員資料修改成功' })
+})
+
+router.post('/joinus', async (req, res) => {
+  console.log('req,body', req.body)
+
+  let data = await connection.queryAsync(
+    `INSERT INTO pet_sitter (member_id, ID_number, district, address, created_time) VALUES (?, ?, ?, ?, ?)`,
+    [
+      req.session.member.id,
+      req.body.ID_number,
+      req.body.district,
+      req.body.address,
+      moment().format('YYYY/MM/DD HH:mm:ss'),
+    ]
+  )
+  res.json({ code: '4001', message: '保母申請成功' })
 })
 module.exports = router
