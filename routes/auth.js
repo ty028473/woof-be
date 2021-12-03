@@ -139,9 +139,55 @@ router.post('/googlelogin', async (req, res) => {
       console.log(req.body.email)
     if (member.length === 0) {
       // 查無此帳號
-      return res.json({ code: '1000', message: '帳號或密碼錯誤' })
+      let result = await connection.queryAsync(
+        'INSERT INTO member (email, name, create_time) VALUES (?)',
+        [
+          [
+            req.body.email,
+            req.body.name,
+            moment().format('YYYY/MM/DD HH:mm:ss'),
+          ],
+        ]
+      )
+      let member = await connection.queryAsync(
+        'SELECT * FROM member WHERE email = ?',
+        [req.body.email]
+      )
+     // 把第0筆抓出來，後面就不用使用時都要加[0]
+    member = member[0]
+
+    // 比對資料成功，寫進session
+    // 自訂要存什麼資料
+    let returnMember = {
+      id: member.id,
+      email: member.email,
+      name: member.name,
+      states: member.states,
+      image: member.image,
+      // null代表不是保母
+      petSitterId: null,
     }
 
+    // 讀取此會員有沒有保母身分
+    let petSitter = await connection.queryAsync(
+      'SELECT * FROM pet_sitter WHERE member_id = ?',
+      [member.id]
+    )
+
+    // 有的話在session新增
+    if (petSitter.length !== 0) {
+      petSitter = petSitter[0]
+      returnMember = {
+        ...returnMember,
+        petSitterId: petSitter.id,
+      }
+    }
+
+    req.session.member = returnMember
+    res.json({ code: '1001', message: '登入成功', member: returnMember })
+    }
+   
+    if (member.length > 0) {
     // 把第0筆抓出來，後面就不用使用時都要加[0]
     member = member[0]
 
@@ -174,6 +220,7 @@ router.post('/googlelogin', async (req, res) => {
 
     req.session.member = returnMember
     res.json({ code: '1001', message: '登入成功', member: returnMember })
+  }
   } catch (e) {
     console.error(e)
     return res.json({ code: '1002', message: '登入失敗' })
