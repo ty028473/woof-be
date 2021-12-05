@@ -40,7 +40,7 @@ router.post('/joinus', async (req, res) => {
   console.log('req,body', req.body)
 
   let data = await connection.queryAsync(
-    `INSERT INTO pet_sitter (member_id, ID_number, district, address, created_time) VALUES (?, ?, ?, ?, ?)`,
+    `INSERT INTO pet_sitter (member_id, ID_number, district, address, create_time) VALUES (?, ?, ?, ?, ?)`,
     [
       req.session.member.id,
       req.body.ID_number,

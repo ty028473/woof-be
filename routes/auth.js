@@ -26,7 +26,9 @@ router.post('/signup', registerRules, async (req, res) => {
   if (!validateResult.isEmpty()) {
     // validateResult 不是空的，那表示有欄位沒有通過驗證
     // 文件的寫法 https://express-validator.github.io/docs/
-    return res.status(400).json({ errors: validateResult.array() })
+    return res
+      .status(400)
+      .json({ code: '0003', errors: validateResult.array() })
   }
   // 表示 validateResult 是空的 ==> 都通過驗證了
 
@@ -136,7 +138,7 @@ router.post('/googlelogin', async (req, res) => {
       'SELECT * FROM member WHERE email = ?',
       [req.body.email]
     )
-      console.log(req.body.email)
+    console.log(req.body.email)
     if (member.length === 0) {
       // 查無此帳號
       let result = await connection.queryAsync(
@@ -153,80 +155,79 @@ router.post('/googlelogin', async (req, res) => {
         'SELECT * FROM member WHERE email = ?',
         [req.body.email]
       )
-     // 把第0筆抓出來，後面就不用使用時都要加[0]
-    member = member[0]
+      // 把第0筆抓出來，後面就不用使用時都要加[0]
+      member = member[0]
 
-    // 比對資料成功，寫進session
-    // 自訂要存什麼資料
-    let returnMember = {
-      id: member.id,
-      email: member.email,
-      name: member.name,
-      states: member.states,
-      image: member.image,
-      // null代表不是保母
-      petSitterId: null,
-    }
-
-    // 讀取此會員有沒有保母身分
-    let petSitter = await connection.queryAsync(
-      'SELECT * FROM pet_sitter WHERE member_id = ?',
-      [member.id]
-    )
-
-    // 有的話在session新增
-    if (petSitter.length !== 0) {
-      petSitter = petSitter[0]
-      returnMember = {
-        ...returnMember,
-        petSitterId: petSitter.id,
+      // 比對資料成功，寫進session
+      // 自訂要存什麼資料
+      let returnMember = {
+        id: member.id,
+        email: member.email,
+        name: member.name,
+        states: member.states,
+        image: member.image,
+        // null代表不是保母
+        petSitterId: null,
       }
+
+      // 讀取此會員有沒有保母身分
+      let petSitter = await connection.queryAsync(
+        'SELECT * FROM pet_sitter WHERE member_id = ?',
+        [member.id]
+      )
+
+      // 有的話在session新增
+      if (petSitter.length !== 0) {
+        petSitter = petSitter[0]
+        returnMember = {
+          ...returnMember,
+          petSitterId: petSitter.id,
+        }
+      }
+
+      req.session.member = returnMember
+      res.json({ code: '1001', message: '登入成功', member: returnMember })
     }
 
-    req.session.member = returnMember
-    res.json({ code: '1001', message: '登入成功', member: returnMember })
-    }
-   
     if (member.length > 0) {
-    // 把第0筆抓出來，後面就不用使用時都要加[0]
-    member = member[0]
+      // 把第0筆抓出來，後面就不用使用時都要加[0]
+      member = member[0]
 
-    // 比對資料成功，寫進session
-    // 自訂要存什麼資料
-    let returnMember = {
-      id: member.id,
-      email: member.email,
-      name: member.name,
-      states: member.states,
-      image: member.image,
-      // null代表不是保母
-      petSitterId: null,
-    }
-
-    // 讀取此會員有沒有保母身分
-    let petSitter = await connection.queryAsync(
-      'SELECT * FROM pet_sitter WHERE member_id = ?',
-      [member.id]
-    )
-
-    // 有的話在session新增
-    if (petSitter.length !== 0) {
-      petSitter = petSitter[0]
-      returnMember = {
-        ...returnMember,
-        petSitterId: petSitter.id,
+      // 比對資料成功，寫進session
+      // 自訂要存什麼資料
+      let returnMember = {
+        id: member.id,
+        email: member.email,
+        name: member.name,
+        states: member.states,
+        image: member.image,
+        // null代表不是保母
+        petSitterId: null,
       }
-    }
 
-    req.session.member = returnMember
-    res.json({ code: '1001', message: '登入成功', member: returnMember })
-  }
+      // 讀取此會員有沒有保母身分
+      let petSitter = await connection.queryAsync(
+        'SELECT * FROM pet_sitter WHERE member_id = ?',
+        [member.id]
+      )
+
+      // 有的話在session新增
+      if (petSitter.length !== 0) {
+        petSitter = petSitter[0]
+        returnMember = {
+          ...returnMember,
+          petSitterId: petSitter.id,
+        }
+      }
+
+      req.session.member = returnMember
+      res.json({ code: '1001', message: '登入成功', member: returnMember })
+    }
   } catch (e) {
     console.error(e)
     return res.json({ code: '1002', message: '登入失敗' })
   }
 })
-
 
 // 登出
 router.get('/logout', (req, res) => {
