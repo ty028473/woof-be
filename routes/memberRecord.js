@@ -10,7 +10,7 @@ router.use(loginCheckMiddleware)
 // 取得會員訂單進行中資料
 router.get('/carryOut', async (req, res) => {
   let data = await connection.queryAsync(
-    'SELECT order_detail.pet_sitter_id, order_detail.order_status, order_detail.district, order_detail.address, order_detail.start, order_detail.end, order_detail.title AS price, order_detail.pet_id AS petName FROM order_detail INNER JOIN order_list ON order_list.id = order_detail.order_id WHERE order_list.member_id = ? AND order_list.check_status = ? AND order_detail.order_status = ?',
+    'SELECT order_detail.id order_detail.pet_sitter_id, order_detail.order_status, order_detail.district, order_detail.address, order_detail.start, order_detail.end, order_detail.title AS price, order_detail.pet_id AS petName FROM order_detail INNER JOIN order_list ON order_list.id = order_detail.order_id WHERE order_list.member_id = ? AND order_list.check_status = ? AND order_detail.order_status = ?',
     [req.session.member.id, 1, 1]
   )
 
@@ -33,7 +33,7 @@ router.get('/carryOut', async (req, res) => {
 // 取得會員訂單已完成資料
 router.get('/complete', async (req, res) => {
   let data = await connection.queryAsync(
-    'SELECT order_detail.pet_sitter_id, order_detail.order_status, order_detail.district, order_detail.address, order_detail.start, order_detail.end, order_detail.title AS price, order_detail.pet_id AS petName FROM order_detail INNER JOIN order_list ON order_list.id = order_detail.order_id WHERE order_list.member_id = ? AND order_list.check_status = ? AND order_detail.order_status = ?',
+    'SELECT order_detail.id, order_detail.pet_sitter_id, order_detail.order_status, order_detail.district, order_detail.address, order_detail.start, order_detail.end, order_detail.title AS price, order_detail.pet_id AS petName FROM order_detail INNER JOIN order_list ON order_list.id = order_detail.order_id WHERE order_list.member_id = ? AND order_list.check_status = ? AND order_detail.order_status = ?',
     [req.session.member.id, 1, 2]
   )
 
@@ -56,7 +56,7 @@ router.get('/complete', async (req, res) => {
 // 取得會員訂單已取消資料
 router.get('/cancel', async (req, res) => {
   let data = await connection.queryAsync(
-    'SELECT order_detail.pet_sitter_id, order_detail.order_status, order_detail.district, order_detail.address, order_detail.start, order_detail.end, order_detail.title AS price, order_detail.pet_id AS petName FROM order_detail INNER JOIN order_list ON order_list.id = order_detail.order_id WHERE order_list.member_id = ? AND order_list.check_status = ? AND order_detail.order_status = ?',
+    'SELECT order_detail.id order_detail.pet_sitter_id, order_detail.order_status, order_detail.district, order_detail.address, order_detail.start, order_detail.end, order_detail.title AS price, order_detail.pet_id AS petName FROM order_detail INNER JOIN order_list ON order_list.id = order_detail.order_id WHERE order_list.member_id = ? AND order_list.check_status = ? AND order_detail.order_status = ?',
     [req.session.member.id, 1, 3]
   )
 
@@ -81,7 +81,7 @@ router.post('/evaluation', async (req, res) => {
   console.log('req,body', req.body)
 
   let data = await connection.queryAsync(
-    `INSERT INTO evaluation (member_id, pet_sitter_id, content, score, created_time) VALUES (?, ?, ?, ?, ?)`,
+    `INSERT INTO evaluation (member_id, pet_sitter_id, content, score, create_time) VALUES (?, ?, ?, ?, ?)`,
     [
       req.session.member.id,
       req.body.pet_sitter_id,
