@@ -57,7 +57,7 @@ router.post('/order_insert', async (req, res) => {
       // (子訂單)
       for (let i = 0; i < req.body[0].length; i++) {
         let orderDetail = await connection.queryAsync(
-          `INSERT INTO  order_detail(order_id,order_status,pet_sitter_id,district,start,end,title, address,pet_id)VALUES(?)`,
+          `INSERT INTO  order_detail(order_id,order_status,pet_sitter_id,district,start,end,title, address,pet_id,evaluation_states)VALUES(?)`,
           [
             [
               orderList.insertId,
@@ -69,6 +69,7 @@ router.post('/order_insert', async (req, res) => {
               req.body[0][i].title,
               req.body[0][i].address,
               req.body[0][i].pet_id,
+              0,
             ],
           ]
         )
