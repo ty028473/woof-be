@@ -16,6 +16,17 @@ router.get('/', async (req, res) => {
   )
 
   if (data.length > 0) {
+    let order = await connection.queryAsync(
+      'SELECT COUNT(id) as orderTimes, SUM(title) as totalPrice FROM order_detail WHERE pet_sitter_id = ?',
+      [req.session.member.petSitterId]
+    )
+    console.log('order', order)
+    let evaluation = await connection.queryAsync(
+      'SELECT COUNT(id) as evaluationTimes, AVG(score) as avgScore FROM evaluation WHERE pet_sitter_id = ?',
+      [req.session.member.petSitterId]
+    )
+    console.log('evaluation', evaluation)
+    data[0] = { ...data[0], ...order[0], ...evaluation[0] }
     res.json(data[0])
   } else {
     res.status(404).send('Not Found')
@@ -51,7 +62,19 @@ router.post('/joinus', async (req, res) => {
       moment().format('YYYY/MM/DD HH:mm:ss'),
     ]
   )
-  res.json({ code: '4001', message: '保母申請成功' })
+
+  let update = await connection.queryAsync(
+    `SELECT id FROM pet_sitter WHERE member_id = ?`,
+    [req.session.member.id]
+  )
+
+  let returnMember = {
+    ...req.session.member,
+    petSitterId: update[0].id,
+  }
+
+  req.session.member = returnMember
+  res.json({ code: '4001', message: '保母申請成功', member: returnMember })
 })
 
 // 處理相簿圖片
