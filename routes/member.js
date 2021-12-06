@@ -93,6 +93,25 @@ router.post(
           req.session.member.id,
         ]
       )
+      let member = await connection.queryAsync(
+        'SELECT * FROM member WHERE id = ?',
+        [req.session.member.id]
+      )
+      member = member[0]
+      let returnMember = {
+        id: member.id,
+        email: member.email,
+        name: member.name,
+        states: member.states,
+        image: member.image,
+        // null代表不是保母
+        petSitterId: null,
+      }
+      res.json({
+        code: '3000',
+        message: '會員資料修改成功',
+        member: returnMember,
+      })
     } else {
       let data = await connection.queryAsync(
         `UPDATE member SET name= ?, phone= ?, birthday= ?, gender= ? WHERE id= ?`,
@@ -104,9 +123,8 @@ router.post(
           req.session.member.id,
         ]
       )
+      res.json({ code: '3000', message: '會員資料修改成功' })
     }
-
-    res.json({ code: '3000', message: '會員資料修改成功' })
   }
 )
 
