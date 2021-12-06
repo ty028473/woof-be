@@ -13,7 +13,7 @@ router.use(loginCheckMiddleware)
 // 取得寵物資料
 router.get('/', async (req, res) => {
   let data = await connection.queryAsync(
-    'SELECT id, name, gender, birthday, information, image FROM pet WHERE member_id = ? AND deleted_time IS NULL',
+    'SELECT id, name, gender, birthday, information, image FROM pet WHERE member_id = ? AND delete_time IS NULL',
     [req.session.member.id]
   )
 
@@ -29,7 +29,7 @@ router.get('/', async (req, res) => {
 router.post('/deletePet', async (req, res) => {
   console.log('req,body', req.body.id)
   let data = await connection.queryAsync(
-    `UPDATE pet SET deleted_time= ? WHERE id= ?`,
+    `UPDATE pet SET delete_time= ? WHERE id= ?`,
     [moment().format('YYYY/MM/DD HH:mm:ss'), req.body.id]
   )
   res.json({ code: '4001', message: '寵物資料刪除成功' })
