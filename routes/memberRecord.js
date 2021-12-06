@@ -17,8 +17,12 @@ router.get('/carryOut', async (req, res) => {
   if (data.length > 0) {
     // 將保母id轉換成保母會員名稱跟保母會員圖片
     for (let i = 0; i < data.length; i++) {
+      // let getPetSitterData = await connection.queryAsync(
+      //   'SELECT name as petSitterName, image as petSitterImage FROM member WHERE id = ?',
+      //   [data[i].pet_sitter_id]
+      // )
       let getPetSitterData = await connection.queryAsync(
-        'SELECT name as petSitterName, image as petSitterImage FROM member WHERE id = ?',
+        'SELECT member.name as petSitterName, member.image as petSitterImage FROM member INNER JOIN pet_sitter ON member.id = pet_sitter.member_id WHERE pet_sitter.id = ?',
         [data[i].pet_sitter_id]
       )
       data[i] = { ...data[i], ...getPetSitterData[0] }
@@ -41,7 +45,7 @@ router.get('/complete', async (req, res) => {
     // 將保母id轉換成保母會員名稱跟保母會員圖片
     for (let i = 0; i < data.length; i++) {
       let getPetSitterData = await connection.queryAsync(
-        'SELECT name as petSitterName, image as petSitterImage FROM member WHERE id = ?',
+        'SELECT member.name as petSitterName, member.image as petSitterImage FROM member INNER JOIN pet_sitter ON member.id = pet_sitter.member_id WHERE pet_sitter.id = ?',
         [data[i].pet_sitter_id]
       )
       data[i] = { ...data[i], ...getPetSitterData[0] }
@@ -64,7 +68,7 @@ router.get('/cancel', async (req, res) => {
     // 將保母id轉換成保母會員名稱跟保母會員圖片
     for (let i = 0; i < data.length; i++) {
       let getPetSitterData = await connection.queryAsync(
-        'SELECT name as petSitterName, image as petSitterImage FROM member WHERE id = ?',
+        'SELECT member.name as petSitterName, member.image as petSitterImage FROM member INNER JOIN pet_sitter ON member.id = pet_sitter.member_id WHERE pet_sitter.id = ?',
         [data[i].pet_sitter_id]
       )
       data[i] = { ...data[i], ...getPetSitterData[0] }
