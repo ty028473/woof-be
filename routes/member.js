@@ -99,13 +99,12 @@ router.post(
       )
       member = member[0]
       let returnMember = {
+        ...req.session.member,
         id: member.id,
         email: member.email,
         name: member.name,
         states: member.states,
         image: member.image,
-        // null代表不是保母
-        petSitterId: null,
       }
       res.json({
         code: '3000',

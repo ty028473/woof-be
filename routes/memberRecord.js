@@ -33,7 +33,7 @@ router.get('/carryOut', async (req, res) => {
 // 取得會員訂單已完成資料
 router.get('/complete', async (req, res) => {
   let data = await connection.queryAsync(
-    'SELECT order_detail.id, order_detail.pet_sitter_id, order_detail.order_status, order_detail.district, order_detail.address, order_detail.start, order_detail.end, order_detail.title AS price, order_detail.pet_id AS petName FROM order_detail INNER JOIN order_list ON order_list.id = order_detail.order_id WHERE order_list.member_id = ? AND order_list.check_status = ? AND order_detail.order_status = ?',
+    'SELECT order_detail.id, order_detail.pet_sitter_id, order_detail.order_status, order_detail.district, order_detail.address, order_detail.start, order_detail.end, order_detail.title AS price, order_detail.pet_id AS petName, order_detail.evaluation_states FROM order_detail INNER JOIN order_list ON order_list.id = order_detail.order_id WHERE order_list.member_id = ? AND order_list.check_status = ? AND order_detail.order_status = ?',
     [req.session.member.id, 1, 2]
   )
 
@@ -89,6 +89,11 @@ router.post('/evaluation', async (req, res) => {
       req.body.score,
       moment().format('YYYY/MM/DD HH:mm:ss'),
     ]
+  )
+
+  let update = await connection.queryAsync(
+    `UPDATE order_detail SET evaluation_states = ? WHERE id= ?`,
+    [1, req.body.id]
   )
 
   res.json({ code: '6000', message: '評價新增成功' })
