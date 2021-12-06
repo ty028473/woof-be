@@ -71,7 +71,7 @@ router.post('/insertPet', petImg.single('image'), async (req, res) => {
   if (req.file) {
     let filename = req.file ? '/petImg/' + req.file.filename : ''
     let data = await connection.queryAsync(
-      `INSERT INTO pet (member_id, name, gender, birthday, information, image, created_time) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO pet (member_id, name, gender, birthday, information, image, create_time) VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
         req.session.member.id,
         req.body.name,
@@ -84,7 +84,7 @@ router.post('/insertPet', petImg.single('image'), async (req, res) => {
     )
   } else {
     let data = await connection.queryAsync(
-      `INSERT INTO pet (member_id, name, gender, birthday, information, created_time) VALUES (?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO pet (member_id, name, gender, birthday, information, create_time) VALUES (?, ?, ?, ?, ?, ?)`,
       [
         req.session.member.id,
         req.body.name,
