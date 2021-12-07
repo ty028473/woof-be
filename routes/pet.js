@@ -5,7 +5,6 @@ const moment = require('moment')
 const { loginCheckMiddleware } = require('../middlewares/auth')
 const path = require('path')
 const multer = require('multer')
-const { body, validationResult } = require('express-validator')
 
 // 驗證有沒有登入
 router.use(loginCheckMiddleware)
@@ -32,6 +31,7 @@ router.post('/deletePet', async (req, res) => {
     `UPDATE pet SET delete_time= ? WHERE id= ?`,
     [moment().format('YYYY/MM/DD HH:mm:ss'), req.body.id]
   )
+
   res.json({ code: '4001', message: '寵物資料刪除成功' })
 })
 
