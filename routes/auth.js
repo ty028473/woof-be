@@ -81,6 +81,10 @@ router.post('/login', async (req, res) => {
       [req.body.email]
     )
 
+    if (req.body.email === '') {
+      return res.json({ code: '1003', message: '請輸入帳號' })
+    }
+
     if (member.length === 0) {
       // 查無此帳號
       return res.json({ code: '1000', message: '帳號或密碼錯誤' })
