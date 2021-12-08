@@ -26,7 +26,9 @@ router.get('/', async (req, res) => {
       [req.session.member.petSitterId]
     )
     console.log('evaluation', evaluation)
-    data[0] = { ...data[0], ...order[0], ...evaluation[0] }
+    let round = { ...evaluation[0] }
+    round.avgScore = Math.round(round.avgScore * 10) / 10
+    data[0] = { ...data[0], ...order[0], ...round }
     res.json(data[0])
   } else {
     res.status(404).send('Not Found')
@@ -123,7 +125,7 @@ router.post('/album', memberImg.single('image'), async (req, res) => {
 // 抓取相簿圖片
 router.get('/getAlbum', async (req, res) => {
   let data = await connection.queryAsync(
-    `SELECT id, image FROM pet_sitter_album WHERE pet_sitter_id = ? AND delete_time IS NULL`,
+    `SELECT id, image FROM pet_sitter_album WHERE pet_sitter_id = ? AND delete_time IS NULL ORDER BY create_time DESC`,
     [req.session.member.petSitterId]
   )
   if (data.length > 0) {
